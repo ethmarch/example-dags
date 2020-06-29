@@ -1,39 +1,32 @@
 from airflow import DAG
-from datetime import datetime, timedelta
+from airflow.operators.bash_operator import BashOperator
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
-from airflow import configuration as conf
+from datetime import datetime
 
 default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime(2020, 6, 29),
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
+    "start_date": datetime(2015, 6, 1),
+    "email_on_failure": False,
+    "email_on_retry": False,
+    "retries": 0,
 }
 
-namespace = "airflow" #conf.get('kubernetes', 'NAMESPACE')
+dag = DAG("foobar", default_args=default_args, schedule_interval=None, catchup=False)
 
-dag = DAG('example_kubernetes_pod',
-          schedule_interval='@once',
-          default_args=default_args)
+t1 = BashOperator(task_id="foo", bash_command="echo foo", xcom_push=True, dag=dag)
+t2 = BashOperator(task_id="bar", bash_command="echo bar", dag=dag)
 
-# This is where we define our desired resources.
-compute_resources = \
-  {'request_cpu': '800m',
-  'request_memory': '3Gi',
-  'limit_cpu': '800m',
-  'limit_memory': '3Gi'}
+t3 = KubernetesPodOperator(
+    namespace="default",
+    image="busybox",
+    image_pull_policy="IfNotPresent",
+    arguments=["echo", "{{ ti.xcom_pull(task_ids='foo') }}"],
+    name="busybox-test",
+    task_id="pod_foo",
+    is_delete_operator_pod=True,
+    get_logs=True,
+    in_cluster=True,
+    dag=dag,
+)
 
-with dag:
-    k = KubernetesPodOperator(
-        namespace=namespace,
-        image="hello-world",
-        labels={"foo": "bar"},
-        name="airflow-test-pod",
-        task_id="task-one",
-        in_cluster=True,
-        resources=compute_resources,
-        is_delete_operator_pod=True,
-        get_logs=True)
+t2.set_upstream(t1)
+t3.set_upstream(t2)
