@@ -33,7 +33,7 @@ with dag:
         labels={"foo": "bar"},
         name="airflow-test-pod",
         task_id="task-one",
-        in_cluster=True
+        in_cluster=True,
         resources=compute_resources,
         is_delete_operator_pod=True,
         get_logs=True)
