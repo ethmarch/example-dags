@@ -2,9 +2,10 @@ from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from datetime import datetime
+from airflow.utils.dates import days_ago
 
 default_args = {
-    "start_date": datetime.utcnow,
+    "start_date": days_ago(2),
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 0,
