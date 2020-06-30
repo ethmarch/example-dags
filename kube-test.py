@@ -17,9 +17,9 @@ t2 = BashOperator(task_id="bar", bash_command="echo bar", dag=dag)
 
 t3 = KubernetesPodOperator(
     namespace="default",
-    image="busybox",
+    image="busybox:latest",
     image_pull_policy="IfNotPresent",
-    arguments=["echo", "{{ ti.xcom_pull(task_ids='foo') }}"],
+    arguments=["sleep", "25"],
     name="busybox-test",
     task_id="pod_foo",
     is_delete_operator_pod=True,
