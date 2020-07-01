@@ -14,7 +14,7 @@ default_args = {
 
 dag = DAG("foobar", default_args=default_args, schedule_interval=None, catchup=False)
 
-t1 = BashOperator(task_id="foo", bash_command="echo foo", xcom_push=True, dag=dag)
+t1 = BashOperator(task_id="foo", bash_command="echo foo", dag=dag)
 t2 = BashOperator(task_id="bar", bash_command="echo bar", dag=dag)
 
 t3 = KubernetesPodOperator(
