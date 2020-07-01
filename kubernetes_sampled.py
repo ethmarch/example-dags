@@ -2,12 +2,13 @@ from airflow import DAG
 from datetime import datetime, timedelta
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy_operator import DummyOperator
+from airflow.utils.dates import days_ago
 
 
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime.utcnow(),
+    'start_date': days_ago(2),
     'email': ['airflow@example.com'],
     'email_on_failure': False,
     'email_on_retry': False,
@@ -16,7 +17,7 @@ default_args = {
 }
 
 dag = DAG(
-    'kubernetes_sample', default_args=default_args, schedule_interval=timedelta(minutes=10))
+    'kubernetes_sample', default_args=default_args, schedule_interval=None)
 
 
 start = DummyOperator(task_id='run_this_first', dag=dag)
